@@ -1,0 +1,26 @@
+{
+	"name": "rust-gstreamer-tensorflow-gpu",
+	"context": ".",
+	"dockerFile": "Dockerfile",
+	"runArgs": [
+		"--gpus=all",
+		"--device", "/dev/snd",
+		"--cap-add=SYS_PTRACE",
+		"--security-opt", "seccomp=unconfined",
+		"-e", "DISPLAY=${env:DISPLAY}",
+		"-e", "PULSE_SERVER=unix:${env:XDG_RUNTIME_DIR}/pulse/native",
+		"-v", "/tmp/.X11-unix:/tmp/.X11-unix",
+		"-v", "${env:XDG_RUNTIME_DIR}/pulse/native:${env:XDG_RUNTIME_DIR}/pulse/native"
+	],
+	"extensions": [
+		"bungcip.better-toml",
+		"rust-lang.rust",
+		"vadimcn.vscode-lldb",
+		"eamodio.gitlens"
+	],
+	"settings": {
+		"lldb.adapterType": "bundled",
+		"lldb.executable": "/usr/bin/lldb",
+		"terminal.integrated.shell.linux": "/bin/bash"
+	}
+}
