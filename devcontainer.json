@@ -3,6 +3,7 @@
 	"context": ".",
 	"dockerFile": "Dockerfile",
 	"runArgs": [
+		"--name", "rust-gst-tf-gpu",
 		"--gpus=all",
 		"--device", "/dev/snd",
 		"--cap-add=SYS_PTRACE",

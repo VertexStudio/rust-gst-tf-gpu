@@ -6,11 +6,11 @@
 - TensorFlow 1.13.1
 - CUDA 10.0
 - cuDNN 7.4
-- OpenCV 3.2.0
+- OpenCV 4.1.1
 
 ## Setup
 
-- Move to the root directoy of your project and run:
+- Move to the root directory of your project and run:
 ```
 git submodule add git@github.com:VertexStudio/rust-gst-tf-gpu.git .devcontainer
 ```

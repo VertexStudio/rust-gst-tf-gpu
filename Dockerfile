@@ -11,9 +11,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         mesa-utils \
         build-essential \
         sudo \
+        cmake \
+        libgtk2.0-dev \
+        libavcodec-dev \
+        libavformat-dev \
+        libswscale-dev \
         libfreetype6-dev \
         libhdf5-serial-dev \
         libzmq3-dev \
+        python-dev \
+        python-numpy \
+        libtbb2 \
+        libtbb-dev \
+        libjpeg-dev \
+        libpng-dev \
+        libtiff-dev \
+        libdc1394-22-dev \
         pkg-config \
         software-properties-common \
         wget \
@@ -82,6 +95,20 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && apt-get autoremove -y \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
+
+# Remove old OpenCV
+RUN apt remove --purge -y libopencv-dev
+
+# Compile OpenCV 4.1.1
+RUN git clone https://github.com/opencv/opencv.git
+WORKDIR /opencv
+RUN git checkout 4.1.1
+RUN mkdir build
+WORKDIR /opencv/build
+RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D BUILD_EXAMPLES=OFF -D OPENCV_GENERATE_PKGCONFIG=ON ..
+RUN make
+RUN make install
+RUN ldconfig
 
 USER $USERNAME
 ENV HOME /home/$USERNAME
