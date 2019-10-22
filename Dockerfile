@@ -13,6 +13,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         sudo \
         cmake \
         libgtk2.0-dev \
+        libgtk-3-dev \
         libavcodec-dev \
         libavformat-dev \
         libswscale-dev \
@@ -21,11 +22,16 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libzmq3-dev \
         python-dev \
         python-numpy \
+        python3-dev \
+        python3-numpy \
+        python-pip \
+        python3-pip \
         libtbb2 \
         libtbb-dev \
         libjpeg-dev \
         libpng-dev \
         libtiff-dev \
+        libeigen3-dev \
         libdc1394-22-dev \
         pkg-config \
         software-properties-common \
@@ -73,6 +79,29 @@ RUN apt-get install -y --no-install-recommends \
     gstreamer1.0-pulseaudio \
     gtk-doc-tools
 
+# Remove old OpenCV
+RUN apt remove --purge -y libopencv-dev
+
+# Compile OpenCV 4.1.1
+RUN git clone https://github.com/opencv/opencv.git
+WORKDIR /opencv
+RUN git checkout 4.1.1
+RUN mkdir build
+WORKDIR /opencv/build
+RUN cmake \
+    -D CMAKE_BUILD_TYPE=Release \
+    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    -D BUILD_EXAMPLES=OFF \
+    -D BUILD_PERF_TESTS=OFF \
+    -D BUILD_TESTS=OFF \
+    -D BUILD_DOCS=OFF \
+    -D OPENCV_GENERATE_PKGCONFIG=ON \
+    -D ENABLE_PRECOMPILED_HEADERS=OFF \
+    ..
+RUN make -j$(nproc)
+RUN make install
+RUN ldconfig
+
 # Tensorflow 1.13.1
 RUN wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz \
     && tar -C /usr/local -xzf libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz \
@@ -96,19 +125,7 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-# Remove old OpenCV
-RUN apt remove --purge -y libopencv-dev
-
-# Compile OpenCV 4.1.1
-RUN git clone https://github.com/opencv/opencv.git
-WORKDIR /opencv
-RUN git checkout 4.1.1
-RUN mkdir build
-WORKDIR /opencv/build
-RUN cmake -D CMAKE_BUILD_TYPE=Release -D CMAKE_INSTALL_PREFIX=/usr/local -D BUILD_EXAMPLES=OFF -D OPENCV_GENERATE_PKGCONFIG=ON ..
-RUN make
-RUN make install
-RUN ldconfig
+RUN apt-get update && apt-get upgrade -y
 
 USER $USERNAME
 ENV HOME /home/$USERNAME
@@ -118,6 +135,19 @@ WORKDIR $HOME
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
 ENV PATH=$HOME/.cargo/bin:$PATH
 RUN rustup component add rls rust-analysis rust-src rustfmt clippy
+
+RUN pip install --user setuptools wheel image matplotlib
+RUN pip3 install --user setuptools wheel image matplotlib
+
+RUN pip install --user tensorflow-gpu==1.13.1
+RUN pip3 install --user tensorflow-gpu==1.13.1
+
+USER root
+
+RUN apt-get install -y --no-install-recommends \
+    libmagick++-dev
+
+USER $USERNAME
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=
