@@ -17,7 +17,9 @@
 		"bungcip.better-toml",
 		"rust-lang.rust",
 		"vadimcn.vscode-lldb",
-		"eamodio.gitlens"
+		"eamodio.gitlens",
+		"ms-vscode.cpptools",
+		"vector-of-bool.cmake-tools"
 	],
 	"settings": {
 		"lldb.adapterType": "bundled",

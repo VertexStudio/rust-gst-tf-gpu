@@ -26,6 +26,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-numpy \
         python-pip \
         python3-pip \
+        python-tk \
+        python3-tk \
         libtbb2 \
         libtbb-dev \
         libjpeg-dev \
@@ -135,12 +137,16 @@ WORKDIR $HOME
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
 ENV PATH=$HOME/.cargo/bin:$PATH
 RUN rustup component add rls rust-analysis rust-src rustfmt clippy
+RUN cargo install ripgrep fd-find
 
-RUN pip install --user setuptools wheel image matplotlib
-RUN pip3 install --user setuptools wheel image matplotlib
+RUN pip install --user setuptools wheel image
+RUN pip3 install --user setuptools wheel image
 
 RUN pip install --user tensorflow-gpu==1.13.1
 RUN pip3 install --user tensorflow-gpu==1.13.1
+
+RUN pip install --user matplotlib
+RUN pip3 install --user matplotlib
 
 USER root
 
@@ -148,6 +154,7 @@ RUN apt-get install -y --no-install-recommends \
     libmagick++-dev
 
 USER $USERNAME
+
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=
