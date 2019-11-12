@@ -1,8 +1,8 @@
 ARG UBUNTU_VERSION=18.04
 
 FROM nvidia/cudagl:10.0-devel-ubuntu${UBUNTU_VERSION} as base
-
 ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},display
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
@@ -37,6 +37,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libdc1394-22-dev \
         pkg-config \
         software-properties-common \
+        unzip \
+        zip \
         wget \
         git \
         vim \
@@ -45,7 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         lldb \
         procps \
         lsb-release \
-        x11-xserver-utils
+        x11-xserver-utils \
+        libmagick++-dev
 
 # CUDA 10.0
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -55,7 +58,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         cuda-curand-10-0 \
         cuda-cusolver-10-0 \
         cuda-cusparse-10-0 \
-        libcudnn7=7.4.1.5-1+cuda10.0
+        libcudnn7=7.4.2.24-1+cuda10.0 \
+        libcudnn7-dev=7.4.2.24-1+cuda10.0 \
+        && ln -s /usr/lib/x86_64-linux-gnu/libcudnn.so.7 /usr/local/cuda-10.0/libcudnn.so.7
 
 ENV LD_LIBRARY_PATH /usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH
 
@@ -104,11 +109,6 @@ RUN make -j$(nproc)
 RUN make install
 RUN ldconfig
 
-# Tensorflow 1.13.1
-RUN wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz \
-    && tar -C /usr/local -xzf libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz \
-    && ldconfig
-
 ARG USERNAME=sim
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -127,11 +127,15 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get upgrade -y
-
-USER $USERNAME
 ENV HOME /home/$USERNAME
 WORKDIR $HOME
+
+# Tensorflow 1.13.1
+RUN wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz \
+    && tar -C /usr/local -xzf libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz \
+    && ldconfig
+
+USER $USERNAME
 
 # Latest Rust
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
@@ -142,19 +146,11 @@ RUN cargo install ripgrep fd-find
 RUN pip install --user setuptools wheel image
 RUN pip3 install --user setuptools wheel image
 
-RUN pip install --user tensorflow-gpu==1.13.1
-RUN pip3 install --user tensorflow-gpu==1.13.1
-
 RUN pip install --user matplotlib
 RUN pip3 install --user matplotlib
 
-USER root
-
-RUN apt-get install -y --no-install-recommends \
-    libmagick++-dev
-
-USER $USERNAME
-
+RUN pip install --user tensorflow-gpu==1.13.1
+RUN pip3 install --user tensorflow-gpu==1.13.1
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=
