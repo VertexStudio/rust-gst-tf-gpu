@@ -19,6 +19,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libswscale-dev \
         libfreetype6-dev \
         libhdf5-serial-dev \
+        unzip \
+        zip \
         libzmq3-dev \
         python-dev \
         python-numpy \
@@ -26,6 +28,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         python3-numpy \
         python-pip \
         python3-pip \
+        python-tk \
+        python3-tk \
         libtbb2 \
         libtbb-dev \
         libjpeg-dev \
@@ -43,7 +47,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         lldb \
         procps \
         lsb-release \
-        x11-xserver-utils
+        x11-xserver-utils \
+        libmagick++-dev
 
 # CUDA 10.0
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -53,7 +58,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         cuda-curand-10-0 \
         cuda-cusolver-10-0 \
         cuda-cusparse-10-0 \
-        libcudnn7=7.4.1.5-1+cuda10.0
+        libcudnn7=7.4.2.24-1+cuda10.0 \
+        libcudnn7-dev=7.4.2.24-1+cuda10.0
 
 ENV LD_LIBRARY_PATH /usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH
 
@@ -106,7 +112,7 @@ RUN ldconfig
 RUN wget https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz \
     && tar -C /usr/local -xzf libtensorflow-gpu-linux-x86_64-1.13.1.tar.gz \
     && ldconfig
-
+    
 ARG USERNAME=sim
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
@@ -125,29 +131,30 @@ RUN groupadd --gid $USER_GID $USERNAME \
     && apt-get clean -y \
     && rm -rf /var/lib/apt/lists/*
 
-RUN apt-get update && apt-get upgrade -y
-
 USER $USERNAME
 ENV HOME /home/$USERNAME
 WORKDIR $HOME
 
+# Bazel 0.21.0
+RUN wget https://github.com/bazelbuild/bazel/releases/download/0.21.0/bazel-0.21.0-installer-linux-x86_64.sh \
+    && chmod +x bazel-0.21.0-installer-linux-x86_64.sh \
+    && ./bazel-0.21.0-installer-linux-x86_64.sh --user \
+    && echo 'export PATH=$HOME/bin:$PATH' >> $HOME/.bashrc \
+    && echo 'source /home/sim/.bazel/bin/bazel-complete.bash' >> $HOME/.bashrc
+
 # Latest Rust
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
 ENV PATH=$HOME/.cargo/bin:$PATH
-RUN rustup component add rls rust-analysis rust-src rustfmt clippy
+RUN rustup component add rls rust-analysis rust-src rustfmt clippy fd-find ripgrep
 
-RUN pip install --user setuptools wheel image matplotlib
-RUN pip3 install --user setuptools wheel image matplotlib
+RUN pip install --user setuptools wheel
+RUN pip3 install --user setuptools wheel
+
+RUN pip install --user image matplotlib
+RUN pip3 install --user image matplotlib
 
 RUN pip install --user tensorflow-gpu==1.13.1
 RUN pip3 install --user tensorflow-gpu==1.13.1
-
-USER root
-
-RUN apt-get install -y --no-install-recommends \
-    libmagick++-dev
-
-USER $USERNAME
 
 # Switch back to dialog for any ad-hoc use of apt-get
 ENV DEBIAN_FRONTEND=
