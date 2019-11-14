@@ -147,7 +147,8 @@ RUN wget https://github.com/bazelbuild/bazel/releases/download/0.21.0/bazel-0.21
 # Latest Rust
 RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
 ENV PATH=$HOME/.cargo/bin:$PATH
-RUN rustup component add rls rust-analysis rust-src rustfmt clippy fd-find ripgrep
+RUN rustup component add rls rust-analysis rust-src rustfmt clippy
+RUN cargo install fd-find ripgrep
 
 RUN pip install --user setuptools wheel image
 RUN pip3 install --user setuptools wheel image
