@@ -1,8 +1,8 @@
 ARG UBUNTU_VERSION=18.04
 
 FROM nvidia/cudagl:10.0-devel-ubuntu${UBUNTU_VERSION} as base
-
 ENV NVIDIA_DRIVER_CAPABILITIES ${NVIDIA_DRIVER_CAPABILITIES},display
+
 ENV DEBIAN_FRONTEND=noninteractive
 ENV LANG C.UTF-8
 ENV LC_ALL C.UTF-8
@@ -39,6 +39,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
         libdc1394-22-dev \
         pkg-config \
         software-properties-common \
+        unzip \
+        zip \
         wget \
         git \
         vim \
@@ -147,11 +149,11 @@ RUN curl https://sh.rustup.rs -sSf | sh -s -- --default-toolchain stable -y
 ENV PATH=$HOME/.cargo/bin:$PATH
 RUN rustup component add rls rust-analysis rust-src rustfmt clippy fd-find ripgrep
 
-RUN pip install --user setuptools wheel
-RUN pip3 install --user setuptools wheel
+RUN pip install --user setuptools wheel image
+RUN pip3 install --user setuptools wheel image
 
-RUN pip install --user image matplotlib
-RUN pip3 install --user image matplotlib
+RUN pip install --user matplotlib
+RUN pip3 install --user matplotlib
 
 RUN pip install --user tensorflow-gpu==1.13.1
 RUN pip3 install --user tensorflow-gpu==1.13.1

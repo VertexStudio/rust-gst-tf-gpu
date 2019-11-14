@@ -18,10 +18,11 @@
 		"rust-lang.rust",
 		"vadimcn.vscode-lldb",
 		"eamodio.gitlens",
-		"ms-vscode.cpptools"
+		"ms-vscode.cpptools",
+		"vector-of-bool.cmake-tools"
 	],
 	"settings": {
-		"lldb.adapterType": "bundled",
+		"lldb.adapterType": "native",
 		"lldb.executable": "/usr/bin/lldb",
 		"terminal.integrated.shell.linux": "/bin/bash"
 	}

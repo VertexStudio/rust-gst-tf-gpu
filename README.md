@@ -1,4 +1,4 @@
-# VSCode Devcontainer
+# Autonomy and Simulation - VSCode Devcontainer
 
 ## Contains
 - Rust
